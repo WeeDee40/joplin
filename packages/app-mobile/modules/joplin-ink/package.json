@@ -1,0 +1,9 @@
+{
+  "name": "joplin-ink",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native PencilKit drawing editor for Joplin (iOS only)",
+  "license": "AGPL-3.0-or-later",
+  "author": "Joplin contributors",
+  "homepage": "https://joplinapp.org"
+}
