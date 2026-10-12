@@ -8,6 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-NSString* const ShareExtensionGroupIdentifier = @"group.net.cozic.joplin";
+NSString* const ShareExtensionGroupIdentifier = @"group.ch.gerber.joplinink";
 NSString* const ShareExtensionShareURL = @"joplin://shareData";
 NSString* const ShareExtensionShareDataFilename = @"shareData";

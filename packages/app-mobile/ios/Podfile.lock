@@ -84,6 +84,8 @@ PODS:
     - hermes-engine/Pre-built (= 250829098.0.17)
   - hermes-engine/Pre-built (250829098.0.17)
   - JoplinCommonShareExtension (1.0.0)
+  - JoplinInk (1.0.0):
+    - ExpoModulesCore
   - JoplinRNShareExtension (1.0.0):
     - JoplinCommonShareExtension
     - React
@@ -2423,6 +2425,7 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - JoplinCommonShareExtension (from `ShareExtension`)
+  - JoplinInk (from `../modules/joplin-ink/ios`)
   - JoplinRNShareExtension (from `ShareExtension`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - QuickCrypto (from `../node_modules/react-native-quick-crypto`)
@@ -2574,6 +2577,8 @@ EXTERNAL SOURCES:
     :tag: hermes-v250829098.0.17
   JoplinCommonShareExtension:
     :path: ShareExtension
+  JoplinInk:
+    :path: "../modules/joplin-ink/ios"
   JoplinRNShareExtension:
     :path: ShareExtension
   NitroModules:
@@ -2798,13 +2803,14 @@ SPEC CHECKSUMS:
   ExpoImageManipulator: 410f59a94cd6a9c28617096b64d2971c247f8605
   ExpoLocalAuthentication: 1e4aef156a3a1f953f8278b8d8309f6118919640
   ExpoLogBox: 80957303325cd4439137765c90a87d7f22aaf2ff
-  ExpoModulesCore: 1be0fe05fa0914a55b56533b0e6200591d7456ba
+  ExpoModulesCore: 79ddb7151febf05278cd8f1bc0275323beb6536b
   ExpoModulesJSI: 9df8e7c9719f59e8c001ec33611774137fc1484a
   ExpoModulesWorklets: 986cf72c18400743869b4642d243115f831e404d
   ExpoSQLite: 72e6ada0504a27cd043eb1bf172db70485a761b6
   FBLazyVector: 2138c6c2ab66c31bf5754dc18097fbc498a49c7f
   hermes-engine: 63c5db7d529c36335fada6582fd293ae2a105d77
   JoplinCommonShareExtension: a8b60b02704d85a7305627912c0240e94af78db7
+  JoplinInk: 9395f95dc5a8f048ead8a8d8c16735dad27cdd49
   JoplinRNShareExtension: e158a4b53ee0aa9cd3037a16221dc8adbd6f7860
   NitroModules: 38f8754287858ff1294e43fd43f614a664e54050
   OpenSSL-Universal: 9110d21982bb7e8b22a962b6db56a8aa805afde7
