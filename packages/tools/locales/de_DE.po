@@ -10212,3 +10212,27 @@ msgstr "Herauszoomen"
 
 #~ msgid "Set or clear alarm:"
 #~ msgstr "Alarm einstellen oder löschen:"
+
+#: packages/lib/models/settings/builtInMetadata.ts
+msgid "Use the native iOS drawing editor"
+msgstr "Nativen iOS-Zeichen-Editor verwenden"
+
+#: packages/lib/models/settings/builtInMetadata.ts
+msgid "Draw with Apple PencilKit. Handwriting in drawings is recognised on the device and can be searched. Disable to use the previous drawing editor."
+msgstr "Mit Apple PencilKit zeichnen. Handschrift in Zeichnungen wird auf dem Gerät erkannt und ist durchsuchbar. Deaktivieren, um den bisherigen Zeichen-Editor zu verwenden."
+
+#: packages/app-mobile/components/NoteEditor/NativeInkEditor/NativeInkEditor.tsx
+msgid "Drawing from the previous editor"
+msgstr "Zeichnung aus dem bisherigen Editor"
+
+#: packages/app-mobile/components/NoteEditor/NativeInkEditor/NativeInkEditor.tsx
+msgid "This drawing was created with the previous drawing editor. You can keep drawing on it, but its existing content can no longer be edited stroke by stroke."
+msgstr "Diese Zeichnung wurde mit dem bisherigen Zeichen-Editor erstellt. Du kannst darauf weiterzeichnen, aber der bestehende Inhalt lässt sich nicht mehr Strich für Strich bearbeiten."
+
+#: packages/app-mobile/components/NoteEditor/NativeInkEditor/NativeInkEditor.tsx
+msgid "The drawing could not be opened: %s"
+msgstr "Die Zeichnung konnte nicht geöffnet werden: %s"
+
+#: packages/app-mobile/components/NoteEditor/NativeInkEditor/NativeInkEditor.tsx
+msgid "The drawing could not be saved: %s"
+msgstr "Die Zeichnung konnte nicht gespeichert werden: %s"
