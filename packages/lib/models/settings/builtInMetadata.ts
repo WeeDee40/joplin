@@ -1339,6 +1339,20 @@ const builtInMetadata = (Setting: typeof SettingType) => {
 			isGlobal: true,
 		},
 
+		// Use the native PencilKit drawing editor instead of js-draw (iOS only)
+		'editor.mobile.nativeInkEditor': {
+			value: true,
+			type: SettingItemType.Bool,
+			section: 'editor',
+			public: true,
+			appTypes: [AppType.Mobile],
+			show: () => mobilePlatform === 'ios',
+			label: () => _('Use the native iOS drawing editor'),
+			description: () => _('Draw with Apple PencilKit. Handwriting in drawings is recognised on the device and can be searched. Disable to use the previous drawing editor.'),
+			storage: SettingStorage.File,
+			isGlobal: true,
+		},
+
 		// Enables/disables spellcheck in the mobile markdown beta editor.
 		'editor.mobile.spellcheckEnabled': {
 			value: true,

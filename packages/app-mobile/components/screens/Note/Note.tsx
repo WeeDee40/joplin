@@ -45,6 +45,9 @@ import ShareExtension from '../../../utils/ShareExtension.js';
 import { FolderEntity, NoteEntity, ResourceEntity } from '@joplin/lib/services/database/types';
 import Logger from '@joplin/utils/Logger';
 import ImageEditor from '../../NoteEditor/ImageEditor/ImageEditor';
+import NativeInkEditor, { DrawingSaveDetails } from '../../NoteEditor/NativeInkEditor/NativeInkEditor';
+import saveDrawingOcrText from '../../NoteEditor/NativeInkEditor/utils/saveDrawingOcrText';
+import { isNativeInkAvailable } from '../../../modules/joplin-ink';
 import promptRestoreAutosave from '../../NoteEditor/ImageEditor/promptRestoreAutosave';
 import isEditableResource from '../../NoteEditor/ImageEditor/isEditableResource';
 import { ChangeEvent as EditorChangeEvent, SelectionRangeChangeEvent, UndoRedoDepthChangeEvent } from '@joplin/editor/events';
@@ -1199,7 +1202,7 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 		}, 'image');
 	}
 
-	private async updateDrawing(svgData: string) {
+	private async updateDrawing(svgData: string): Promise<ResourceEntity> {
 		let resource: ResourceEntity|null = this.state.imageEditorResource;
 
 		if (!resource) {
@@ -1227,11 +1230,21 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 
 			await this.refreshResource(resource);
 		}
+
+		return resource;
 	}
 
-	private onSaveDrawing = async (svgData: string) => {
-		await this.updateDrawing(svgData);
+	private onSaveDrawing = async (svgData: string, details?: DrawingSaveDetails) => {
+		const resource = await this.updateDrawing(svgData);
+
+		if (resource && typeof details?.ocrText === 'string') {
+			await saveDrawingOcrText(resource.id, details.ocrText);
+		}
 	};
+
+	private shouldUseNativeInkEditor() {
+		return Platform.OS === 'ios' && Setting.value('editor.mobile.nativeInkEditor') && isNativeInkAvailable();
+	}
 
 	private onCloseDrawing = () => {
 		this.setState({ showImageEditor: false });
@@ -1856,7 +1869,8 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 				style={{ flex: 1 }}
 			/>;
 		} else if (this.state.showImageEditor) {
-			return <ImageEditor
+			const DrawingEditor = this.shouldUseNativeInkEditor() ? NativeInkEditor : ImageEditor;
+			return <DrawingEditor
 				resourceFilename={this.state.imageEditorResourceFilepath}
 				themeId={this.props.themeId}
 				onSave={this.onSaveDrawing}

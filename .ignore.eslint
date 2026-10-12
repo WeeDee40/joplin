@@ -826,6 +826,10 @@ packages/app-mobile/components/NoteEditor/ImageEditor/isEditableResource.js
 packages/app-mobile/components/NoteEditor/ImageEditor/promptRestoreAutosave.js
 packages/app-mobile/components/NoteEditor/MarkdownEditor.test.js
 packages/app-mobile/components/NoteEditor/MarkdownEditor.js
+packages/app-mobile/components/NoteEditor/NativeInkEditor/NativeInkEditor.js
+packages/app-mobile/components/NoteEditor/NativeInkEditor/utils/inkSvg.test.js
+packages/app-mobile/components/NoteEditor/NativeInkEditor/utils/inkSvg.js
+packages/app-mobile/components/NoteEditor/NativeInkEditor/utils/saveDrawingOcrText.js
 packages/app-mobile/components/NoteEditor/NoteEditor.test.js
 packages/app-mobile/components/NoteEditor/NoteEditor.js
 packages/app-mobile/components/NoteEditor/RichTextEditor.test.js
@@ -1046,6 +1050,7 @@ packages/app-mobile/contentScripts/utils/readFileToBase64.js
 packages/app-mobile/contentScripts/utils/setUpLogger.js
 packages/app-mobile/gulpfile.js
 packages/app-mobile/index.web.js
+packages/app-mobile/modules/joplin-ink/index.js
 packages/app-mobile/root.js
 packages/app-mobile/services/AlarmServiceDriver.android.js
 packages/app-mobile/services/AlarmServiceDriver.ios.js
