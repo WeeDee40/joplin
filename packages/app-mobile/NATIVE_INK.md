@@ -156,15 +156,17 @@ UI-Tests (iPad-Simulator, Debug-Build, Metro muss laufen: `yarn start` in `packa
 
 ## Phase 2: Canvas-Notizen
 
-Eine Canvas-Notiz ist eine ganze Notiz zum Schreiben und Gestalten: A4-Seiten untereinander, Handschrift mit PencilKit, Papiervorlagen (blanko, liniert, kariert), frei platzierbare Textfelder und Bilder, Export als PDF.
+Eine Canvas-Notiz ist eine ganze Notiz zum Schreiben und Gestalten: A4-Seiten untereinander, Handschrift mit PencilKit, Papiervorlagen (blanko, liniert, kariert – Karos und Linien haben denselben Abstand von 24 pt, etwa 8,5 mm), frei platzierbare Textfelder und Bilder, Export als PDF.
 
 **Bedienung (iPad):**
 
 - Neue Canvas-Notiz: *+ › Canvas-Notiz*. Der Titel wird mit «Canvas-Notiz» und dem Datum vorbelegt und lässt sich in der Leiste ändern.
 - Bearbeiten: in einer Canvas-Notiz auf den Bearbeiten-Knopf (Stift) oder lange auf eine Seite drücken. Canvas-Notizen öffnen nie den Markdown-Editor.
 - Leiste: *Fertig* · Titel · **T** Textfeld · Bild einfügen · Papier · Seite hinzufügen (nach der aktuellen Seite) · ⋮ (*Als PDF teilen*, *Seite N löschen*).
-- Textfeld: tippen zum Auswählen, nochmals tippen zum Schreiben. Mit dem Finger verschieben, am blauen Punkt rechts unten die Breite ändern. Das kleine Menü darüber: Schrift kleiner/grösser, löschen. Leere Textfelder verschwinden beim Verlassen.
-- Bild: aus Fotos einfügen, mit dem Finger verschieben, mit zwei Fingern oder am blauen Punkt skalieren, über das kleine Menü löschen. Die Tinte liegt über den Bildern, du kannst also auf Fotos schreiben.
+- Zoom: mit zwei Fingern stufenlos von 50 % bis 400 %. Nach der Geste wird die Seite in der neuen Grösse neu gezeichnet, Tinte, Text und Linien bleiben scharf.
+- Objekte müssen zuerst angetippt werden: Wischen über ein nicht ausgewähltes Bild oder Textfeld scrollt nur die Seite.
+- Textfeld: tippen zum Auswählen, nochmals tippen zum Schreiben. Ausgewählt mit dem Finger verschieben, am blauen Punkt rechts unten die Breite ändern. Das kleine Menü darüber: Schrift kleiner/grösser, löschen. Leere Textfelder verschwinden beim Verlassen.
+- Bild: aus Fotos einfügen, antippen, dann mit dem Finger verschieben, mit zwei Fingern oder am blauen Punkt skalieren, über das kleine Menü löschen. Die Tinte liegt über den Bildern, du kannst also auf Fotos schreiben.
 - Gespeichert wird automatisch (3 s nach einer Änderung, beim Wechsel in den Hintergrund und bei *Fertig*). Es gibt deshalb kein *Abbrechen*; Rückgängig geht über die Werkzeugpalette.
 
 **Speicherformat:**
@@ -195,12 +197,12 @@ Jede Seite ist eine eigene SVG-Ressource (595.28 × 841.89 pt) mit einem fertig 
 
 **Gelöste Stolpersteine:** Nach «Seite hinzufügen» sprang die Ansicht zurück zur ersten Seite – ausgelöst durch die «nach oben scrollen»-Funktion von iOS; sie ist für den Canvas abgeschaltet. Joplin übernimmt bei Notizen ohne Titel die erste Textzeile als Titel, das wäre die unsichtbare Markierung; deshalb wird der Titel vorbelegt.
 
-**Grenzen von Phase 2:** kein Zoom, keine Seiten umsortieren, Bilder/Textfelder ohne eigenes Rückgängig, kein Drehen von Bildern, PDF-Import/Annotation nicht enthalten. Auf anderen Plattformen (Android, Desktop) sind Canvas-Notizen nur lesbar; wer dort den Markdown-Text ändert, kann die Struktur beschädigen.
+**Grenzen von Phase 2:** keine Seiten umsortieren, Bilder/Textfelder ohne eigenes Rückgängig, kein Drehen von Bildern, PDF-Import/Annotation nicht enthalten. Auf anderen Plattformen (Android, Desktop) sind Canvas-Notizen nur lesbar; wer dort den Markdown-Text ändert, kann die Struktur beschädigen.
 
 ## Bekannte Einschränkungen
 
 - Nur iOS. Android und Web behalten js-draw (unverändert).
-- Kein Pinch-Zoom in Phase 1; das Blatt ist immer auf Bildschirmbreite eingepasst.
+- Einzelne Zeichnungen (Editor aus Phase 1) haben keinen Pinch-Zoom; das Blatt ist dort immer auf Bildschirmbreite eingepasst. Canvas-Notizen lassen sich zoomen.
 - Gespeichert als PNG im SVG: Dateien sind grösser als Vektor-SVGs (z. B. ~40–60 KB für ein paar Wörter), und andere Clients können die Striche nicht bearbeiten (js-draw sieht nur ein Bild). Wird die Einstellung ausgeschaltet und eine PencilKit-Zeichnung mit js-draw bearbeitet, gehen die PencilKit-Daten verloren (der sichtbare Inhalt bleibt).
 - Konvertierte js-draw-Zeichnungen: Der alte Teil wird zur Bitmap (nicht mehr strichweise editierbar).
 - Erkennungsqualität hängt von Vision ab; `de-CH` ist nicht verfügbar, es wird `de-DE` verwendet. Bei sehr gleichförmigen Zeilen fasst Vision gelegentlich zusammen (im Test wurde zweimal «TITEL» als einmal erkannt).
