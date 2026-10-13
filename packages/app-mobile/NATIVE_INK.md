@@ -154,6 +154,49 @@ UI-Tests (iPad-Simulator, Debug-Build, Metro muss laufen: `yarn start` in `packa
 | Einstellung im Konfigurationsscreen (Abschnitt *Editor*) mit Beschreibung sichtbar, Umschalten auf js-draw | per UI-Test bedient |
 | Release-Build für echte Geräte (`generic/platform=iOS`, arm64, JS-Bundle eingebettet) | kompiliert (ohne Signatur, siehe oben) |
 
+## Phase 2: Canvas-Notizen
+
+Eine Canvas-Notiz ist eine ganze Notiz zum Schreiben und Gestalten: A4-Seiten untereinander, Handschrift mit PencilKit, Papiervorlagen (blanko, liniert, kariert), frei platzierbare Textfelder und Bilder, Export als PDF.
+
+**Bedienung (iPad):**
+
+- Neue Canvas-Notiz: *+ › Canvas-Notiz*. Der Titel wird mit «Canvas-Notiz» und dem Datum vorbelegt und lässt sich in der Leiste ändern.
+- Bearbeiten: in einer Canvas-Notiz auf den Bearbeiten-Knopf (Stift) oder lange auf eine Seite drücken. Canvas-Notizen öffnen nie den Markdown-Editor.
+- Leiste: *Fertig* · Titel · **T** Textfeld · Bild einfügen · Papier · Seite hinzufügen (nach der aktuellen Seite) · ⋮ (*Als PDF teilen*, *Seite N löschen*).
+- Textfeld: tippen zum Auswählen, nochmals tippen zum Schreiben. Mit dem Finger verschieben, am blauen Punkt rechts unten die Breite ändern. Das kleine Menü darüber: Schrift kleiner/grösser, löschen. Leere Textfelder verschwinden beim Verlassen.
+- Bild: aus Fotos einfügen, mit dem Finger verschieben, mit zwei Fingern oder am blauen Punkt skalieren, über das kleine Menü löschen. Die Tinte liegt über den Bildern, du kannst also auf Fotos schreiben.
+- Gespeichert wird automatisch (3 s nach einer Änderung, beim Wechsel in den Hintergrund und bei *Fertig*). Es gibt deshalb kein *Abbrechen*; Rückgängig geht über die Werkzeugpalette.
+
+**Speicherformat:**
+
+```
+<!-- joplin-canvas-note v1 -->
+
+![Seite 1](:/<Ressourcen-ID>)
+<!-- canvas-text
+Text der Textfelder von Seite 1 (unsichtbar, aber durchsuchbar)
+-->
+
+![Seite 2](:/<Ressourcen-ID>)
+```
+
+Jede Seite ist eine eigene SVG-Ressource (595.28 × 841.89 pt) mit einem fertig gerenderten Bild der ganzen Seite (Papier, Bilder, Tinte, Text; immer in der hellen Variante) und dem bearbeitbaren Zustand als JSON in `<metadata id="joplin-canvas-page" data-version="1">`: PencilKit-Daten, Vorlage, Textfelder (Position, Breite, Text, Schriftgrösse) und Bilder (Position, Grösse, JPEG). Nur geänderte Seiten werden neu geschrieben. Die Handschrift jeder Seite wird wie in Phase 1 mit Vision erkannt und in `ocr_text` gespeichert; der Text der Textfelder steht im Notiztext. Beides findet die Joplin-Suche – auf dem iPad und am Desktop. Der Desktop zeigt die Seiten als Bilder an.
+
+**Dateien:**
+
+| Datei (unter `packages/app-mobile`) | Zweck |
+| --- | --- |
+| `modules/joplin-ink/ios/Canvas/JoplinCanvasView.swift` | Seiten untereinander, Werkzeugpalette, Auswahlmenü, Bilder einfügen, Export, PDF |
+| `modules/joplin-ink/ios/Canvas/CanvasPageView.swift` | Eine Seite: Papier, Bilder, PencilKit, Textfelder, Fingergesten, Rendering |
+| `modules/joplin-ink/ios/Canvas/CanvasItemViews.swift` | Textfelder und Bilder |
+| `modules/joplin-ink/ios/Canvas/PaperRenderer.swift` | Papiervorlagen (Bildschirm, PNG, PDF) |
+| `components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx` | Leiste, Laden, automatisches Speichern |
+| `components/NoteEditor/CanvasNoteEditor/utils/canvasNote.ts` | Notiztext und Seiten-SVG bauen/lesen (Jest-Tests) |
+
+**Gelöste Stolpersteine:** Nach «Seite hinzufügen» sprang die Ansicht zurück zur ersten Seite – ausgelöst durch die «nach oben scrollen»-Funktion von iOS; sie ist für den Canvas abgeschaltet. Joplin übernimmt bei Notizen ohne Titel die erste Textzeile als Titel, das wäre die unsichtbare Markierung; deshalb wird der Titel vorbelegt.
+
+**Grenzen von Phase 2:** kein Zoom, keine Seiten umsortieren, Bilder/Textfelder ohne eigenes Rückgängig, kein Drehen von Bildern, PDF-Import/Annotation nicht enthalten. Auf anderen Plattformen (Android, Desktop) sind Canvas-Notizen nur lesbar; wer dort den Markdown-Text ändert, kann die Struktur beschädigen.
+
 ## Bekannte Einschränkungen
 
 - Nur iOS. Android und Web behalten js-draw (unverändert).
@@ -180,6 +223,10 @@ UI-Tests (iPad-Simulator, Debug-Build, Metro muss laufen: `yarn start` in `packa
 - [ ] **Dark Mode**: Joplin auf ein dunkles Theme stellen. Papier im Editor dunkel, Tinte hell; nach dem Speichern zeigt die Notiz die Version auf weissem Papier.
 - [ ] **App während des Zeichnens beenden**: Zeichnen, ~3 s warten, App im App-Umschalter wegwischen. Notiz wieder öffnen: «Es wurde eine automatisch gespeicherte Zeichnung gefunden…» › *Anhängen*. Die Zeichnung ist angehängt.
 - [ ] **Einstellung**: *Konfiguration › Editor › Nativen iOS-Zeichen-Editor verwenden* aus › *Bild zeichnen* öffnet wieder js-draw.
+- [ ] **Canvas-Notiz anlegen**: *+ › Canvas-Notiz*, mit dem Pencil schreiben, Papier auf *Liniert* stellen, ein Textfeld schreiben, ein Foto einfügen und verkleinern, auf das Foto schreiben, Seite hinzufügen und dort weiterschreiben, *Fertig*. Beide Seiten erscheinen in der Notiz.
+- [ ] **Canvas-Notiz bearbeiten**: über den Bearbeiten-Knopf öffnen; Textfeld verschieben, Schrift vergrössern, Textfeld löschen; Seite löschen (⋮).
+- [ ] **PDF**: ⋮ › *Als PDF teilen* › z. B. *In Dateien sichern*; im PDF ist der Text der Textfelder markierbar.
+- [ ] **Canvas am Desktop**: Seiten werden angezeigt; Suche nach einem Wort aus einem Textfeld und nach einem handgeschriebenen Wort findet die Notiz.
 - [ ] **Nur Stift**: Mit *Einstellungen › Apple Pencil › Nur mit Apple Pencil zeichnen* an scrollt ein Finger und zeichnet nicht.
 
 <!-- cSpell:enable -->
