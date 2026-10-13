@@ -290,7 +290,7 @@ class WebDavApi {
 				</d:prop>
 			</d:propfind>`;
 
-		return this.exec('PROPFIND', path, body, { Depth: depth }, options);
+		return this.exec('PROPFIND', path, body, { Depth: `${depth}` }, options);
 	}
 
 	// Used for debugging - can be uncommented in exec() to log curl commands

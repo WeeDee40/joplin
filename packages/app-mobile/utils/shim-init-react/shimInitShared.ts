@@ -11,6 +11,7 @@ import { getLocales } from 'react-native-localize';
 import type Setting from '@joplin/lib/models/Setting';
 import shim, { MobilePlatform } from '@joplin/lib/shim';
 import { closestSupportedLocale, defaultLocale, setLocale } from '@joplin/lib/locale';
+import normalizeFetchHeaders from './normalizeFetchHeaders';
 
 const shimInitShared = () => {
 	shim.sjclModule = require('@joplin/lib/vendor/sjcl-rn.js');
@@ -51,7 +52,7 @@ const shimInitShared = () => {
 			// more info:
 			// https://github.com/laurent22/joplin/issues/3986#issuecomment-718019688
 
-			return fetch(validatedUrl, options);
+			return fetch(validatedUrl, options ? { ...options, headers: normalizeFetchHeaders(options.headers) } : options);
 		}, options);
 	};
 

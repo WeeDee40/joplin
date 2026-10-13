@@ -1134,6 +1134,8 @@ packages/app-mobile/utils/shareHandler.js
 packages/app-mobile/utils/shim-init-react/index.js
 packages/app-mobile/utils/shim-init-react/index.web.js
 packages/app-mobile/utils/shim-init-react/injectedJs.js
+packages/app-mobile/utils/shim-init-react/normalizeFetchHeaders.test.js
+packages/app-mobile/utils/shim-init-react/normalizeFetchHeaders.js
 packages/app-mobile/utils/shim-init-react/shimInitShared.js
 packages/app-mobile/utils/testing/createMockReduxStore.js
 packages/app-mobile/utils/testing/getWebViewDomById.js
