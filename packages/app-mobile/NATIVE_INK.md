@@ -30,6 +30,7 @@ Note.tsx ──(showImageEditor)──► NativeInkEditor.tsx (iOS, Einstellung 
 | `components/NoteEditor/NativeInkEditor/utils/saveDrawingOcrText.ts` | Schreibt den erkannten Text in die Ressource. |
 | `components/screens/Note/Note.tsx` | Schaltet an einer Stelle zwischen beiden Editoren um; reicht den OCR-Text beim Speichern weiter. |
 | `packages/lib/models/settings/builtInMetadata.ts` | Einstellung `editor.mobile.nativeInkEditor` («Nativen iOS-Zeichen-Editor verwenden», Standard an, nur auf iOS sichtbar). |
+| `packages/editor/CodeMirror/extensions/rendering/renderBlockImages.ts` | Langes Drücken auf eine Zeichnung (SVG-Ressource) im Markdown-Editor löst das Editor-Event `EditResource` aus; `Note.tsx` öffnet dann den Zeichen-Editor. |
 | `ios/JoplinUITests/JoplinUITests.swift` | UI-Tests `testNativeInkDrawing` und `testLegacyDrawingConversion`. |
 
 ### Entscheidungen
@@ -169,6 +170,7 @@ UI-Tests (iPad-Simulator, Debug-Build, Metro muss laufen: `yarn start` in `packa
 
 - [ ] **Neue Zeichnung**: Notiz öffnen › *⋮ › Bild zeichnen*. Mit dem Apple Pencil ein paar Wörter schreiben, in der Werkzeugpalette Werkzeug/Farbe wechseln, mit dem Finger nach unten scrollen, weiter unten weiterschreiben (das Blatt wächst). *Fertig* tippen. Die Zeichnung erscheint in der Notiz.
 - [ ] **Bestehende PencilKit-Zeichnung weiterbearbeiten**: Im Notiz-Viewer lange auf die Zeichnung drücken › *Bearbeiten*. Alle Striche sind da und lassen sich einzeln radieren (Radierer in der Palette). Etwas ändern › *Fertig*.
+- [ ] **Im Bearbeitungsmodus bearbeiten**: Notiz im Bearbeitungsmodus, lange (~0,6 s) auf die unter dem Link angezeigte Zeichnung drücken › der Zeichen-Editor öffnet sich. Fotos zeigen weiterhin das normale Verhalten.
 - [ ] **Abbrechen**: Etwas ändern › *Abbrechen* › «Änderungen speichern?» erscheint; beide Varianten (*Änderungen verwerfen*, *Änderungen speichern*) prüfen.
 - [ ] **Alte js-draw-Zeichnung öffnen**: Notiz mit einer früher (oder in der offiziellen App) erstellten Zeichnung › lange drücken › *Bearbeiten*. Der Hinweis erscheint einmal, die alte Zeichnung ist als Hintergrund sichtbar. Darauf zeichnen › *Fertig*. Alter Inhalt plus neue Striche sind in der Notiz sichtbar. Erneut öffnen: kein Hinweis mehr.
 - [ ] **Sync zum Desktop**: Auf iPad und Desktop synchronisieren. Die Zeichnung erscheint am Desktop in der Notiz, scharf und in richtiger Grösse.
