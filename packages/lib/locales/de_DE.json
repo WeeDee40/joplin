@@ -5060,5 +5060,71 @@
 	],
 	"The drawing could not be saved: %s": [
 		"Die Zeichnung konnte nicht gespeichert werden: %s"
+	],
+	"Page %d": [
+		"Seite %d"
+	],
+	"Page %d is missing.": [
+		"Seite %d fehlt."
+	],
+	"Page %d has not been downloaded yet. Please sync and try again.": [
+		"Seite %d wurde noch nicht heruntergeladen. Bitte synchronisieren und erneut versuchen."
+	],
+	"Page %d is not a canvas page.": [
+		"Seite %d ist keine Canvas-Seite."
+	],
+	"The canvas note could not be opened: %s": [
+		"Die Canvas-Notiz konnte nicht geöffnet werden: %s"
+	],
+	"The canvas note could not be saved: %s": [
+		"Die Canvas-Notiz konnte nicht gespeichert werden: %s"
+	],
+	"Canvas page": [
+		"Canvas-Seite"
+	],
+	"Canvas note": [
+		"Canvas-Notiz"
+	],
+	"Paper": [
+		"Papier"
+	],
+	"Blank": [
+		"Blanko"
+	],
+	"Lined": [
+		"Liniert"
+	],
+	"Grid": [
+		"Kariert"
+	],
+	"Share as PDF": [
+		"Als PDF teilen"
+	],
+	"Delete page %d": [
+		"Seite %d löschen"
+	],
+	"Delete page %d?": [
+		"Seite %d löschen?"
+	],
+	"Page %d of %d": [
+		"Seite %d von %d"
+	],
+	"This cannot be undone.": [
+		"Dies kann nicht rückgängig gemacht werden."
+	],
+	"Add text box": [
+		"Textfeld hinzufügen"
+	],
+	"Insert image": [
+		"Bild einfügen"
+	],
+	"Add page": [
+		"Seite hinzufügen"
+	],
+	"More": [
+		"Mehr"
+	],
+	"Saving...": [
+		"Speichern..."
 	]
 }

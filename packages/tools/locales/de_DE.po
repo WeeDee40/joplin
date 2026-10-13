@@ -10236,3 +10236,91 @@ msgstr "Die Zeichnung konnte nicht geöffnet werden: %s"
 #: packages/app-mobile/components/NoteEditor/NativeInkEditor/NativeInkEditor.tsx
 msgid "The drawing could not be saved: %s"
 msgstr "Die Zeichnung konnte nicht gespeichert werden: %s"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Page %d"
+msgstr "Seite %d"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Page %d is missing."
+msgstr "Seite %d fehlt."
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Page %d has not been downloaded yet. Please sync and try again."
+msgstr "Seite %d wurde noch nicht heruntergeladen. Bitte synchronisieren und erneut versuchen."
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Page %d is not a canvas page."
+msgstr "Seite %d ist keine Canvas-Seite."
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "The canvas note could not be opened: %s"
+msgstr "Die Canvas-Notiz konnte nicht geöffnet werden: %s"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "The canvas note could not be saved: %s"
+msgstr "Die Canvas-Notiz konnte nicht gespeichert werden: %s"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Canvas page"
+msgstr "Canvas-Seite"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Canvas note"
+msgstr "Canvas-Notiz"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Paper"
+msgstr "Papier"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Blank"
+msgstr "Blanko"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Lined"
+msgstr "Liniert"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Grid"
+msgstr "Kariert"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Share as PDF"
+msgstr "Als PDF teilen"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Delete page %d"
+msgstr "Seite %d löschen"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Delete page %d?"
+msgstr "Seite %d löschen?"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Page %d of %d"
+msgstr "Seite %d von %d"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "This cannot be undone."
+msgstr "Dies kann nicht rückgängig gemacht werden."
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Add text box"
+msgstr "Textfeld hinzufügen"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Insert image"
+msgstr "Bild einfügen"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Add page"
+msgstr "Seite hinzufügen"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "More"
+msgstr "Mehr"
+
+#: packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.tsx
+msgid "Saving..."
+msgstr "Speichern..."
