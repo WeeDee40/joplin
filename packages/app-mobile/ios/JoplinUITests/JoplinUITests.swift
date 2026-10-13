@@ -233,6 +233,22 @@ final class JoplinUITests: XCTestCase {
 		XCTAssertTrue(textBox.waitForExistence(timeout: 10.0), "The text box was not restored")
 		attachScreenshot(app, name: "4-reopened")
 
+		// Swiping over an unselected text box scrolls instead of moving it
+		let page = app.otherElements["Page"].firstMatch
+		let offsetBefore = textBox.frame.minY - page.frame.minY
+		textBox.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 0.05, thenDragTo: page.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.05)))
+		sleep(1)
+		XCTAssertEqual(textBox.frame.minY - page.frame.minY, offsetBefore, accuracy: 2, "The unselected text box was moved")
+
+		// Pinch to zoom in: the page gets wider than the screen
+		let widthBefore = page.frame.width
+		page.pinch(withScale: 2.5, velocity: 1)
+		sleep(2)
+		attachScreenshot(app, name: "4b-zoomed")
+		XCTAssertGreaterThan(app.otherElements["Page"].firstMatch.frame.width, widthBefore * 1.5, "Zoom did not work")
+		app.otherElements["Page"].firstMatch.pinch(withScale: 0.4, velocity: -1)
+		sleep(2)
+
 		canvas.tapToolbarButton(app, "More")
 		app.descendants(matching: .any)["Share as PDF"].firstMatch.waitThenTap("the \"share as PDF\" menu item")
 		sleep(3)
