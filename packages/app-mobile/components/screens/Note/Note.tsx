@@ -14,6 +14,7 @@ import { connect } from 'react-redux';
 import Note from '@joplin/lib/models/Note';
 import BaseItem from '@joplin/lib/models/BaseItem';
 import Resource from '@joplin/lib/models/Resource';
+import { parseResourceUrl } from '@joplin/lib/urlUtils';
 import Folder from '@joplin/lib/models/Folder';
 import Clipboard from '@react-native-clipboard/clipboard';
 const md5 = require('md5');
@@ -1286,6 +1287,18 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 		}
 	};
 
+	// Long press on a drawing in the Markdown editor
+	private noteEditor_onEditResource = async (resourceUrl: string) => {
+		const resourceId = parseResourceUrl(resourceUrl).itemId;
+		if (!resourceId) return;
+
+		const resource: ResourceEntity = await Resource.load(resourceId);
+		if (!resource || !isEditableResource(resource.mime)) return;
+
+		await Resource.requireIsReady(resource);
+		await this.editDrawing(resource);
+	};
+
 	private toggleIsTodo_onPress() {
 		const newNote = shared.toggleIsTodo_onPress(this);
 
@@ -1991,6 +2004,7 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 						onUndoRedoDepthChange={this.onUndoRedoDepthChange}
 						onSearchVisibleChange={this.onSearchVisibleChange_}
 						onAttach={this.onAttach}
+						onEditResource={this.noteEditor_onEditResource}
 						noteResources={this.state.noteResources}
 						readOnly={this.state.readOnly || this.state.reloadInProgress}
 						plugins={this.props.plugins}

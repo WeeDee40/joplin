@@ -38,4 +38,6 @@ export interface ReplacementExtension {
 export interface RenderedContentContext {
 	resolveImageSrc(src: string, reloadCounter: number): Promise<string>;
 	openLink(link: string): void;
+	// Requests editing a resource (e.g. a drawing). `src` is the resource URL (":/id").
+	editResource?(src: string): void;
 }

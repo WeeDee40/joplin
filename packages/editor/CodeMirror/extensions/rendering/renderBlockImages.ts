@@ -6,6 +6,11 @@ import makeBlockReplaceExtension from './utils/makeBlockReplaceExtension';
 
 const imageClassName = 'cm-md-image';
 
+// Long-pressing a drawing (SVG resource) requests editing it, like in the note viewer
+const longPressDelayMs = 600;
+const longPressMaxMovePx = 10;
+const isDrawingSrc = (resolvedSrc: string) => /\.svg(\?.*)?$/i.test(resolvedSrc);
+
 class ImageHeightCache {
 	private readonly cache = new Map<string, number>();
 	private readonly maxEntries = 500;
@@ -70,6 +75,10 @@ class ImageWidget extends WidgetType {
 
 		const updateImageUrl = () => {
 			if (this.resolvedSrc_) {
+				const editable = !!this.context_.editResource && isDrawingSrc(this.resolvedSrc_);
+				dom.dataset.editableDrawing = editable ? 'true' : '';
+				// Prevent the system image menu (Share, Save to Photos...) on long press
+				image.style.setProperty('-webkit-touch-callout', editable ? 'none' : '');
 				image.src = this.resolvedSrc_;
 				// When the image loads, measure and cache the height
 				image.onload = () => {
@@ -111,6 +120,32 @@ class ImageWidget extends WidgetType {
 
 		container.appendChild(image);
 		this.updateDOM(container);
+
+		let longPressTimeout: ReturnType<typeof setTimeout>|null = null;
+		let touchStart: { x: number; y: number }|null = null;
+		const cancelLongPress = () => {
+			if (longPressTimeout) clearTimeout(longPressTimeout);
+			longPressTimeout = null;
+			touchStart = null;
+		};
+		container.addEventListener('touchstart', (event) => {
+			cancelLongPress();
+			if (container.dataset.editableDrawing !== 'true' || event.touches.length !== 1) return;
+
+			touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+			longPressTimeout = setTimeout(() => {
+				longPressTimeout = null;
+				this.context_.editResource?.(this.src_);
+			}, longPressDelayMs);
+		}, { passive: true });
+		container.addEventListener('touchmove', (event) => {
+			if (!touchStart || event.touches.length !== 1) return cancelLongPress();
+			const dx = event.touches[0].clientX - touchStart.x;
+			const dy = event.touches[0].clientY - touchStart.y;
+			if (Math.hypot(dx, dy) > longPressMaxMovePx) cancelLongPress();
+		}, { passive: true });
+		container.addEventListener('touchend', cancelLongPress);
+		container.addEventListener('touchcancel', cancelLongPress);
 
 		container.addEventListener('mousedown', (e) => {
 			if (e.button !== 0) return;

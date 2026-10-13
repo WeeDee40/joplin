@@ -75,6 +75,9 @@ const createEditor = (
 		openLink: (link) => {
 			props.onEvent({ kind: EditorEventType.FollowLink, link });
 		},
+		editResource: (resourceUrl) => {
+			props.onEvent({ kind: EditorEventType.EditResource, resourceUrl });
+		},
 	};
 
 

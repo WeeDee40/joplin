@@ -11,6 +11,7 @@ export enum EditorEventType {
 	FollowLink,
 	Scroll,
 	Remove,
+	EditResource,
 }
 
 export interface ChangeEvent {
@@ -68,9 +69,16 @@ export interface RemoveEvent {
 	kind: EditorEventType.Remove;
 }
 
+// Request to edit a resource shown in the editor (e.g. long press on a drawing)
+export interface EditResourceEvent {
+	kind: EditorEventType.EditResource;
+	// Resource URL, e.g. ":/0123456789abcdef0123456789abcdef"
+	resourceUrl: string;
+}
+
 export type EditorEvent =
 		ChangeEvent|UndoRedoDepthChangeEvent|SelectionRangeChangeEvent|
 			EditorScrolledEvent|
 			SelectionFormattingChangeEvent|UpdateSearchDialogEvent|
-			RequestEditLinkEvent|FollowLinkEvent|RemoveEvent;
+			RequestEditLinkEvent|FollowLinkEvent|RemoveEvent|EditResourceEvent;
 

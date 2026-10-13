@@ -74,6 +74,8 @@ interface Props {
 	onSelectionChange: OnSelectionChange;
 	onUndoRedoDepthChange: OnUndoRedoDepthChange;
 	onAttach: OnAttach;
+	// Called when the user asks to edit a resource from the editor (e.g. long press on a drawing)
+	onEditResource?: (resourceUrl: string)=> void;
 	refreshKey?: number;
 	onLoadEnd?: ()=> void;
 }
@@ -356,6 +358,9 @@ function NoteEditor(props: Props) {
 			break;
 		case EditorEventType.FollowLink:
 			void CommandService.instance().execute('openItem', event.link);
+			break;
+		case EditorEventType.EditResource:
+			props.onEditResource?.(event.resourceUrl);
 			break;
 		case EditorEventType.UpdateSearchDialog: {
 			const hasExternalChange = (
