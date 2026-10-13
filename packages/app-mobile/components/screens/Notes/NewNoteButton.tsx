@@ -8,15 +8,17 @@ import { useCallback, useMemo } from 'react';
 import Logger from '@joplin/utils/Logger';
 import NavService from '@joplin/lib/services/NavService';
 import { MenuOption } from '../../BottomDrawerMenu';
+import Setting from '@joplin/lib/models/Setting';
+import { isNativeCanvasAvailable } from '../../../modules/joplin-ink';
+import { newCanvasNoteBody } from '../../NoteEditor/CanvasNoteEditor/utils/canvasNote';
 
 const logger = Logger.create('NewNoteButton');
 
 interface Props {
 }
 
-const makeNewNote = (isTodo: boolean, action?: AttachFileAction) => {
+const makeNewNote = (isTodo: boolean, action?: AttachFileAction, body = '') => {
 	logger.debug(`New ${isTodo ? 'to-do' : 'note'} with action`, action);
-	const body = '';
 	return CommandService.instance().execute('newNote', body, isTodo, { attachFileAction: action });
 };
 
@@ -37,7 +39,14 @@ const NewNoteButton: React.FC<Props> = () => {
 			};
 		};
 
+		const canvasNoteItems: MenuOption[] = Setting.value('editor.mobile.nativeInkEditor') && isNativeCanvasAvailable() ? [{
+			icon: 'material notebook-edit-outline',
+			title: _('Canvas note'),
+			onPress: () => makeNewNote(false, AttachFileAction.CanvasNote, newCanvasNoteBody()),
+		}] : [];
+
 		const items: MenuOption[] = [
+			...canvasNoteItems,
 			attachmentMenuItem('material camera-outline', _('Camera'), AttachFileAction.TakePhoto),
 			attachmentMenuItem('material attachment', _('Attachment'), AttachFileAction.AttachFile, _('File')),
 			{ icon: 'material data-matrix-scan', title: _('Scan notebook'), onPress: () => NavService.go('DocumentScanner') },

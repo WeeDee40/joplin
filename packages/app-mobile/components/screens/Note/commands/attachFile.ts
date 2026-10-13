@@ -15,6 +15,8 @@ export enum AttachFileAction {
 	AttachPhoto = 'attachPhoto',
 	AttachDrawing = 'attachDrawing',
 	RecordAudio = 'attachRecording',
+	// Not an attachment: opens the canvas editor of a new canvas note
+	CanvasNote = 'canvasNote',
 }
 
 export interface AttachFileOptions {

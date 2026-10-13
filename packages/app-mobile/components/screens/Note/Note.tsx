@@ -48,7 +48,9 @@ import Logger from '@joplin/utils/Logger';
 import ImageEditor from '../../NoteEditor/ImageEditor/ImageEditor';
 import NativeInkEditor, { DrawingSaveDetails } from '../../NoteEditor/NativeInkEditor/NativeInkEditor';
 import saveDrawingOcrText from '../../NoteEditor/NativeInkEditor/utils/saveDrawingOcrText';
-import { isNativeInkAvailable } from '../../../modules/joplin-ink';
+import { isNativeCanvasAvailable, isNativeInkAvailable } from '../../../modules/joplin-ink';
+import CanvasNoteEditor from '../../NoteEditor/CanvasNoteEditor/CanvasNoteEditor';
+import { isCanvasNote } from '../../NoteEditor/CanvasNoteEditor/utils/canvasNote';
 import promptRestoreAutosave from '../../NoteEditor/ImageEditor/promptRestoreAutosave';
 import isEditableResource from '../../NoteEditor/ImageEditor/isEditableResource';
 import { ChangeEvent as EditorChangeEvent, SelectionRangeChangeEvent, UndoRedoDepthChangeEvent } from '@joplin/editor/events';
@@ -161,6 +163,8 @@ interface State {
 	fromShare: boolean;
 	showCamera: boolean;
 	showImageEditor: boolean;
+	showCanvasEditor: boolean;
+	canvasInitialPageId: string|null;
 	showAudioRecorder: boolean;
 	imageEditorResource: ResourceEntity;
 	imageEditorResourceFilepath: string;
@@ -238,6 +242,8 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 			fromShare: false,
 			showCamera: false,
 			showImageEditor: false,
+			showCanvasEditor: false,
+			canvasInitialPageId: null,
 			showAudioRecorder: false,
 			searchVisible: false,
 			imageEditorResource: null,
@@ -646,6 +652,8 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 			setTimeout(async () => {
 				if (action === AttachFileAction.AttachDrawing) {
 					await this.drawPicture_onPress();
+				} else if (action === AttachFileAction.CanvasNote) {
+					this.openCanvasEditor(null);
 				} else {
 					const options: AttachFileOptions = {
 						action: action,
@@ -709,17 +717,22 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 
 		// Disable opening/closing the side menu with touch gestures
 		// when the image editor is open.
-		if (prevState.showImageEditor !== this.state.showImageEditor) {
+		if (prevState.showImageEditor !== this.state.showImageEditor || prevState.showCanvasEditor !== this.state.showCanvasEditor) {
 			this.props.dispatch({
 				type: 'SET_SIDE_MENU_TOUCH_GESTURES_DISABLED',
-				disableSideMenuGestures: this.state.showImageEditor,
+				disableSideMenuGestures: this.state.showImageEditor || this.state.showCanvasEditor,
 			});
+		}
+
+		// Canvas notes are edited in the canvas editor, never as Markdown
+		if (!this.state.isLoading && this.state.mode === 'edit' && this.canEditCanvasNote()) {
+			this.setState({ mode: 'view' });
 		}
 
 		if (prevState.mode !== this.state.mode) {
 			this.props.dispatch({
 				type: 'NOTE_EDITOR_VISIBLE_CHANGE',
-				visible: this.state.mode === 'edit' && !this.state.showCamera && !this.state.showImageEditor,
+				visible: this.state.mode === 'edit' && !this.state.showCamera && !this.state.showImageEditor && !this.state.showCanvasEditor,
 			});
 		}
 
@@ -1277,6 +1290,11 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 
 		const resourceId = messageData[1];
 
+		if (this.canEditCanvasNote()) {
+			this.openCanvasEditor(resourceId);
+			return;
+		}
+
 		const resource = await BaseItem.loadItemById(resourceId);
 		await Resource.requireIsReady(resource);
 
@@ -1287,10 +1305,47 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 		}
 	};
 
+	private canEditCanvasNote() {
+		return Platform.OS === 'ios'
+			&& isCanvasNote(this.state.note?.body)
+			&& !this.state.readOnly
+			&& Setting.value('editor.mobile.nativeInkEditor')
+			&& isNativeCanvasAvailable();
+	}
+
+	private openCanvasEditor(initialPageId: string|null) {
+		// Otherwise the first line of the body (the canvas marker) becomes the title
+		if (!this.state.note?.title?.trim()) {
+			shared.noteComponent_change(this, 'title', `${_('Canvas note')} ${time.formatDateToLocal(new Date())}`);
+		}
+		this.setState({ showCanvasEditor: true, canvasInitialPageId: initialPageId });
+	}
+
+	private canvasEditor_onBodyChange = async (body: string) => {
+		shared.noteComponent_change(this, 'body', body);
+		// New or changed page images
+		shared.clearResourceCache();
+		const noteResources = await shared.attachedResources(body);
+		this.setState({ noteResources });
+	};
+
+	private canvasEditor_onTitleChange = (title: string) => {
+		shared.noteComponent_change(this, 'title', title);
+	};
+
+	private canvasEditor_onExit = () => {
+		this.setState({ showCanvasEditor: false, canvasInitialPageId: null });
+	};
+
 	// Long press on a drawing in the Markdown editor
 	private noteEditor_onEditResource = async (resourceUrl: string) => {
 		const resourceId = parseResourceUrl(resourceUrl).itemId;
 		if (!resourceId) return;
+
+		if (this.canEditCanvasNote()) {
+			this.openCanvasEditor(resourceId);
+			return;
+		}
 
 		const resource: ResourceEntity = await Resource.load(resourceId);
 		if (!resource || !isEditableResource(resource.mime)) return;
@@ -1716,6 +1771,11 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 	}
 
 	private toggleVisiblePanes = () => {
+		if (this.canEditCanvasNote()) {
+			this.openCanvasEditor(null);
+			return;
+		}
+
 		const isSwitchingToEdit = this.state.mode === 'view';
 		void CommandService.instance().execute('toggleVisiblePanes');
 		if (isSwitchingToEdit) {
@@ -1850,7 +1910,7 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 	};
 
 	private noteEditorVisible() {
-		return !this.state.showCamera && !this.state.showImageEditor;
+		return !this.state.showCamera && !this.state.showImageEditor && !this.state.showCanvasEditor;
 	}
 
 	public render() {
@@ -1880,6 +1940,16 @@ class NoteScreenComponent extends BaseScreenComponent<ComponentProps, State> imp
 				onInsertBarcode={this.cameraView_onInsertBarcode}
 				onCancel={this.cameraView_onCancel}
 				style={{ flex: 1 }}
+			/>;
+		} else if (this.state.showCanvasEditor) {
+			return <CanvasNoteEditor
+				themeId={this.props.themeId}
+				noteTitle={note.title}
+				noteBody={note.body}
+				initialPageId={this.state.canvasInitialPageId}
+				onBodyChange={this.canvasEditor_onBodyChange}
+				onTitleChange={this.canvasEditor_onTitleChange}
+				onExit={this.canvasEditor_onExit}
 			/>;
 		} else if (this.state.showImageEditor) {
 			const DrawingEditor = this.shouldUseNativeInkEditor() ? NativeInkEditor : ImageEditor;

@@ -793,6 +793,9 @@ packages/app-mobile/components/NoteBodyViewer/hooks/useOnResourceLongPress.js
 packages/app-mobile/components/NoteBodyViewer/hooks/useRerenderHandler.js
 packages/app-mobile/components/NoteBodyViewer/hooks/useSource.js
 packages/app-mobile/components/NoteBodyViewer/types.js
+packages/app-mobile/components/NoteEditor/CanvasNoteEditor/CanvasNoteEditor.js
+packages/app-mobile/components/NoteEditor/CanvasNoteEditor/utils/canvasNote.test.js
+packages/app-mobile/components/NoteEditor/CanvasNoteEditor/utils/canvasNote.js
 packages/app-mobile/components/NoteEditor/EditLinkDialog.js
 packages/app-mobile/components/NoteEditor/ImageEditor/ImageEditor.js
 packages/app-mobile/components/NoteEditor/ImageEditor/autosave.js
