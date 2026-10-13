@@ -83,6 +83,11 @@ final class JoplinUITests: XCTestCase {
 		let image = app.webViews.images.firstMatch
 		XCTAssertTrue(image.waitForExistence(timeout: 60.0))
 		attachScreenshot(app, name: "3-viewer")
+		app.webViews.firstMatch.swipeUp()
+		sleep(1)
+		attachScreenshot(app, name: "3b-viewer-page-2")
+		app.webViews.firstMatch.swipeDown()
+		sleep(1)
 		editFirstImage(app)
 
 		inkEditor.waitFor(app: app)
@@ -171,6 +176,69 @@ final class JoplinUITests: XCTestCase {
 		attachScreenshot(app, name: "2-viewer")
 	}
 
+	// Creates a canvas note with handwriting, a text box and two pages, saves it,
+	// then opens it again.
+	@MainActor
+	func testCanvasNote() throws {
+		let app = XCUIApplication()
+		app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+		app.launch()
+		app.activate()
+
+		let mainScreen = MainScreen()
+		mainScreen.waitFor(app: app)
+		mainScreen.newFolder(app: app, name: "Canvas Tests")
+		app.buttons["Add new"].waitThenTap("the \"add new\" button")
+		app.descendants(matching: .any).matching(NSPredicate(format: "label LIKE \"*Canvas note\"")).firstMatch
+			.waitThenTap("the \"canvas note\" menu item")
+
+		let canvas = CanvasEditorScreen()
+		canvas.waitFor(app: app)
+		InkEditorScreen().drawWord(app: app, offsetY: 0)
+
+		canvas.tapToolbarButton(app, "Add text box")
+		sleep(1)
+		app.typeText("Hallo Canvas")
+		// Tap on an empty part of the page to finish editing
+		app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+		attachScreenshot(app, name: "1-page-1")
+
+		canvas.tapToolbarButton(app, "Paper")
+		app.descendants(matching: .any)["Lined"].firstMatch.waitThenTap("the \"lined\" paper")
+
+		canvas.tapToolbarButton(app, "Add page")
+		sleep(2)
+		InkEditorScreen().drawWord(app: app, offsetY: 0)
+		attachScreenshot(app, name: "2-page-2")
+
+		app.buttons["Done"].firstMatch.waitThenTap("the \"done\" button")
+
+		// The viewer shows both pages
+		let pages = app.webViews.images
+		XCTAssertTrue(pages.firstMatch.waitForExistence(timeout: 60.0))
+		let twoPages = NSPredicate(format: "count == 2")
+		expectation(for: twoPages, evaluatedWith: pages)
+		waitForExpectations(timeout: 30.0)
+		attachScreenshot(app, name: "3-viewer")
+		app.webViews.firstMatch.swipeUp()
+		sleep(1)
+		attachScreenshot(app, name: "3b-viewer-page-2")
+		app.webViews.firstMatch.swipeDown()
+		sleep(1)
+
+		// Open it again with the edit button: the text box is still there
+		app.buttons["Edit"].firstMatch.waitThenTap("the edit button")
+		canvas.waitFor(app: app)
+		let textBox = app.textViews.matching(NSPredicate(format: "value CONTAINS 'Hallo Canvas'")).firstMatch
+		XCTAssertTrue(textBox.waitForExistence(timeout: 10.0), "The text box was not restored")
+		attachScreenshot(app, name: "4-reopened")
+
+		canvas.tapToolbarButton(app, "More")
+		app.descendants(matching: .any)["Share as PDF"].firstMatch.waitThenTap("the \"share as PDF\" menu item")
+		sleep(3)
+		attachScreenshot(app, name: "5-share-pdf")
+	}
+
 	// Long-presses the first image in the note viewer and chooses "Edit". The
 	// system image menu (Share, Save to Photos...) can appear instead of Joplin's
 	// menu, so retry a few times.
@@ -197,6 +265,22 @@ final class JoplinUITests: XCTestCase {
 		attachment.name = name
 		attachment.lifetime = .keepAlways
 		add(attachment)
+	}
+}
+
+class CanvasEditorScreen {
+	func waitFor(app: XCUIApplication) {
+		let addTextBox = app.buttons["Add text box"].firstMatch
+		if !addTextBox.waitForExistence(timeout: 30.0) {
+			XCTFail("Failed to find the canvas editor")
+		}
+		let loaded = NSPredicate(format: "isEnabled == true")
+		let expectation = XCTNSPredicateExpectation(predicate: loaded, object: addTextBox)
+		XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 30.0), .completed)
+	}
+
+	func tapToolbarButton(_ app: XCUIApplication, _ label: String) {
+		app.buttons[label].firstMatch.waitThenTap("the \"\(label)\" button")
 	}
 }
 
