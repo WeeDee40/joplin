@@ -6,8 +6,8 @@ enum PaperRenderer {
   // Lined paper: ~8.5 mm line spacing, starting below a top margin
   static let lineSpacing: CGFloat = 24
   static let linedTopMargin: CGFloat = 72
-  // Grid paper: 5 mm squares
-  static let gridSpacing: CGFloat = 14.17
+  // Grid paper: same spacing as the lines of lined paper
+  static let gridSpacing: CGFloat = lineSpacing
 
   struct Colors {
     let paper: UIColor
@@ -71,13 +71,37 @@ enum PaperRenderer {
   }
 }
 
+// Tiles the paper drawing, so that a zoomed-in page does not need one huge bitmap.
+private final class PaperTiledLayer: CATiledLayer {
+  override class func fadeDuration() -> CFTimeInterval { 0 }
+}
+
 // On-screen paper. Follows light/dark mode.
 final class PaperView: UIView {
+  override class var layerClass: AnyClass { PaperTiledLayer.self }
+
+  // Read from the tile drawing threads, so they are plain stored values
+  // (UIKit state like traitCollection must not be used there).
+  private struct DrawingState {
+    var template: PaperTemplate = .blank
+    var scale: CGFloat = 1
+    var colors = PaperRenderer.lightColors
+  }
+  private let stateLock = NSLock()
+  private var drawingState = DrawingState()
+
+  private func updateState(_ change: (inout DrawingState) -> Void) {
+    stateLock.lock()
+    change(&drawingState)
+    stateLock.unlock()
+    setNeedsDisplay()
+  }
+
   var template: PaperTemplate = .blank {
-    didSet { setNeedsDisplay() }
+    didSet { updateState { $0.template = template } }
   }
   var scale: CGFloat = 1 {
-    didSet { setNeedsDisplay() }
+    didSet { updateState { $0.scale = scale } }
   }
 
   override init(frame: CGRect) {
@@ -85,6 +109,7 @@ final class PaperView: UIView {
     isOpaque = true
     isUserInteractionEnabled = false
     contentMode = .redraw
+    (layer as? CATiledLayer)?.tileSize = CGSize(width: 512, height: 512)
   }
 
   required init?(coder: NSCoder) {
@@ -93,12 +118,21 @@ final class PaperView: UIView {
 
   override func draw(_ rect: CGRect) {
     guard let context = UIGraphicsGetCurrentContext() else { return }
-    let colors = traitCollection.userInterfaceStyle == .dark ? PaperRenderer.darkColors : PaperRenderer.lightColors
-    PaperRenderer.draw(template, in: context, scale: scale, colors: colors)
+    stateLock.lock()
+    let state = drawingState
+    stateLock.unlock()
+    PaperRenderer.draw(state.template, in: context, scale: state.scale, colors: state.colors)
   }
 
   override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
     super.traitCollectionDidChange(previousTraitCollection)
-    setNeedsDisplay()
+    let isDark = traitCollection.userInterfaceStyle == .dark
+    updateState { $0.colors = isDark ? PaperRenderer.darkColors : PaperRenderer.lightColors }
+  }
+
+  override func didMoveToWindow() {
+    super.didMoveToWindow()
+    let isDark = traitCollection.userInterfaceStyle == .dark
+    updateState { $0.colors = isDark ? PaperRenderer.darkColors : PaperRenderer.lightColors }
   }
 }

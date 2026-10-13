@@ -264,17 +264,21 @@ final class CanvasPageView: UIView, PKCanvasViewDelegate, UIGestureRecognizerDel
   override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
     let location = gestureRecognizer.location(in: self)
 
+    // Items must be selected (tapped) first, so that scrolling over them never
+    // moves them by accident.
+    guard let selected = delegate?.pageSelectedItem(), contains(selected) else {
+      return gestureRecognizer === itemTap ? super.gestureRecognizerShouldBegin(gestureRecognizer) : false
+    }
+
     if gestureRecognizer === itemPan {
-      if let selected = delegate?.pageSelectedItem(), contains(selected), isOnResizeHandle(selected, viewPoint: location) {
-        return true
-      }
-      guard let item = item(at: location) else { return false }
-      if let textBox = item as? CanvasTextBoxView, textBox.isEditing { return false }
+      if isOnResizeHandle(selected, viewPoint: location) { return true }
+      guard item(at: location) === selected else { return false }
+      if let textBox = selected as? CanvasTextBoxView, textBox.isEditing { return false }
       return true
     }
 
     if gestureRecognizer === itemPinch {
-      return item(at: location) is CanvasImageItemView
+      return selected is CanvasImageItemView && selected.frame.insetBy(dx: -40, dy: -40).contains(location)
     }
 
     return super.gestureRecognizerShouldBegin(gestureRecognizer)
@@ -285,9 +289,12 @@ final class CanvasPageView: UIView, PKCanvasViewDelegate, UIGestureRecognizerDel
     return gestureRecognizer === itemTap
   }
 
-  // Lets the outer scroll view's pan wait for item drags.
+  // Lets the outer scroll view's pan and zoom wait for item drags/pinches.
   func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-    return gestureRecognizer === itemPan && otherGestureRecognizer is UIPanGestureRecognizer && otherGestureRecognizer.view is UIScrollView
+    guard otherGestureRecognizer.view is UIScrollView, otherGestureRecognizer.view !== canvasView else { return false }
+    if gestureRecognizer === itemPan { return otherGestureRecognizer is UIPanGestureRecognizer }
+    if gestureRecognizer === itemPinch { return otherGestureRecognizer is UIPinchGestureRecognizer }
+    return false
   }
 
   @objc private func onItemTap(_ recognizer: UITapGestureRecognizer) {
@@ -352,7 +359,7 @@ final class CanvasPageView: UIView, PKCanvasViewDelegate, UIGestureRecognizerDel
   @objc private func onItemPinch(_ recognizer: UIPinchGestureRecognizer) {
     switch recognizer.state {
     case .began:
-      guard let image = item(at: recognizer.location(in: self)) as? CanvasImageItemView else { return }
+      guard let image = delegate?.pageSelectedItem() as? CanvasImageItemView, contains(image) else { return }
       dragItem = image
       pinchStartFrame = image.itemFrame
       delegate?.page(self, didSelect: image)

@@ -10,6 +10,9 @@ class JoplinCanvasView: ExpoView, UIScrollViewDelegate, CanvasPageViewDelegate {
   private static let sideMargin: CGFloat = 16
   private static let maximumPageWidth: CGFloat = 900
   private static let exportScale: CGFloat = 2
+  // Zoom range, relative to "page fits the screen width"
+  private static let minimumZoom: CGFloat = 0.5
+  private static let maximumZoom: CGFloat = 4
 
   let onReady = EventDispatcher()
   let onChanged = EventDispatcher()
@@ -28,6 +31,7 @@ class JoplinCanvasView: ExpoView, UIScrollViewDelegate, CanvasPageViewDelegate {
   private var pendingImagePage: CanvasPageView?
   private var imagePicker: ImagePickerCoordinator?
   private var lastReportedState: [String: Any] = [:]
+  private var zoomFactor: CGFloat = 1
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
@@ -37,6 +41,9 @@ class JoplinCanvasView: ExpoView, UIScrollViewDelegate, CanvasPageViewDelegate {
 
     scrollView.delegate = self
     scrollView.alwaysBounceVertical = true
+    scrollView.bouncesZoom = true
+    scrollView.minimumZoomScale = Self.minimumZoom
+    scrollView.maximumZoomScale = Self.maximumZoom
     scrollView.contentInsetAdjustmentBehavior = .never
     scrollView.keyboardDismissMode = .interactive
     // Tapping the status bar would jump to the first page
@@ -78,16 +85,26 @@ class JoplinCanvasView: ExpoView, UIScrollViewDelegate, CanvasPageViewDelegate {
     layoutPages()
   }
 
-  private var pageScale: CGFloat {
+  // Scale at which a page fits the screen width
+  private var fitScale: CGFloat {
     let available = min(Self.maximumPageWidth, bounds.width - 2 * Self.sideMargin)
     return max(0.1, available / CanvasGeometry.pageSize.width)
   }
 
+  private var pageScale: CGFloat {
+    return fitScale * zoomFactor
+  }
+
   private func layoutPages() {
     guard bounds.width > 0 else { return }
+    // While pinching, the scroll view scales the content. The pages are laid
+    // out at the new scale when the gesture ends (scrollViewDidEndZooming).
+    guard scrollView.zoomScale == 1 else { return }
+
     let scale = pageScale
     let pageSize = CGSize(width: CanvasGeometry.pageSize.width * scale, height: CanvasGeometry.pageSize.height * scale)
-    let x = (bounds.width - pageSize.width) / 2
+    let contentWidth = max(bounds.width, pageSize.width + 2 * Self.sideMargin)
+    let x = (contentWidth - pageSize.width) / 2
     var y = Self.pageSpacing
 
     for page in pages {
@@ -98,9 +115,70 @@ class JoplinCanvasView: ExpoView, UIScrollViewDelegate, CanvasPageViewDelegate {
       y += pageSize.height + Self.pageSpacing
     }
 
-    contentView.frame = CGRect(x: 0, y: 0, width: bounds.width, height: y)
+    contentView.frame = CGRect(x: 0, y: 0, width: contentWidth, height: y)
     scrollView.contentSize = contentView.frame.size
+    scrollView.minimumZoomScale = Self.minimumZoom / zoomFactor
+    scrollView.maximumZoomScale = Self.maximumZoom / zoomFactor
     updateSelectionToolbar()
+  }
+
+  // MARK: - Zoom
+
+  func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+    return contentView
+  }
+
+  // Keeps content that is narrower than the screen centred while pinching
+  func scrollViewDidZoom(_ scrollView: UIScrollView) {
+    let horizontalInset = max(0, (scrollView.bounds.width - scrollView.contentSize.width) / 2)
+    scrollView.contentInset.left = horizontalInset
+    scrollView.contentInset.right = horizontalInset
+  }
+
+  // Applies the zoom to the page scale, so that strokes, text and paper are
+  // rendered sharply, and keeps the point under the screen centre in place.
+  func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+    let zoom = scrollView.zoomScale
+    guard abs(zoom - 1) > 0.001 else { return }
+
+    let center = CGPoint(
+      x: scrollView.contentOffset.x + scrollView.bounds.width / 2,
+      y: scrollView.contentOffset.y + scrollView.bounds.height / 2
+    )
+    var anchorPage: CanvasPageView?
+    var anchorPoint = CGPoint.zero
+    var bestDistance = CGFloat.greatestFiniteMagnitude
+    for page in pages {
+      let point = scrollView.convert(center, to: page)
+      let distance = point.y < 0 ? -point.y : max(0, point.y - page.bounds.height)
+      if distance < bestDistance {
+        bestDistance = distance
+        anchorPage = page
+        anchorPoint = CGPoint(x: point.x / page.scale, y: point.y / page.scale)
+      }
+    }
+
+    zoomFactor = min(Self.maximumZoom, max(Self.minimumZoom, zoomFactor * zoom))
+    UIView.performWithoutAnimation {
+      scrollView.zoomScale = 1
+      scrollView.contentInset.left = 0
+      scrollView.contentInset.right = 0
+      layoutPages()
+    }
+
+    guard let anchorPage else { return }
+    let target = CGPoint(
+      x: anchorPage.frame.minX + anchorPoint.x * anchorPage.scale,
+      y: anchorPage.frame.minY + anchorPoint.y * anchorPage.scale
+    )
+    let maxOffset = CGPoint(
+      x: max(0, scrollView.contentSize.width - scrollView.bounds.width),
+      y: max(0, scrollView.contentSize.height + scrollView.contentInset.bottom - scrollView.bounds.height)
+    )
+    scrollView.contentOffset = CGPoint(
+      x: min(maxOffset.x, max(0, target.x - scrollView.bounds.width / 2)),
+      y: min(maxOffset.y, max(0, target.y - scrollView.bounds.height / 2))
+    )
   }
 
   // MARK: - Tool picker
@@ -231,9 +309,8 @@ class JoplinCanvasView: ExpoView, UIScrollViewDelegate, CanvasPageViewDelegate {
   private func scrollToPage(_ page: CanvasPageView) {
     let maxOffset = max(0, scrollView.contentSize.height + scrollView.contentInset.bottom - scrollView.bounds.height)
     let offset = min(maxOffset, max(0, page.frame.minY - Self.pageSpacing))
-    scrollView.setContentOffset(CGPoint(x: 0, y: offset), animated: false)
-    // UIKit scrolls the first responder back into view: make the target page's
-    // canvas the first responder, otherwise the view jumps back.
+    scrollView.setContentOffset(CGPoint(x: scrollView.contentOffset.x, y: offset), animated: false)
+    // Make the page active (tool picker, undo)
     if window != nil {
       toolPicker?.setVisible(true, forFirstResponder: page.canvasView)
       page.canvasView.becomeFirstResponder()
