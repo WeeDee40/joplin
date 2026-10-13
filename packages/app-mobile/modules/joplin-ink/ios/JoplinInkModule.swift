@@ -27,7 +27,7 @@ public class JoplinInkModule: Module {
     Name("JoplinInk")
 
     View(JoplinInkView.self) {
-      Events("onDrawingChanged")
+      Events("onReady", "onDrawingChanged")
 
       Prop("darkMode") { (view: JoplinInkView, darkMode: Bool?) in
         view.setDarkMode(darkMode ?? false)

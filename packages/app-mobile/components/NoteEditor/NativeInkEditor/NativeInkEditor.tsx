@@ -49,12 +49,12 @@ const useStyles = (themeId: number) => {
 				justifyContent: 'space-between',
 				paddingHorizontal: 4,
 				minHeight: 48,
-				backgroundColor: theme.backgroundColor2,
+				backgroundColor: theme.backgroundColor,
 				borderBottomWidth: StyleSheet.hairlineWidth,
 				borderBottomColor: theme.dividerColor,
 			},
 			title: {
-				color: theme.color2,
+				color: theme.color,
 				fontSize: theme.fontSize,
 				fontWeight: '600',
 			},
@@ -79,6 +79,8 @@ const NativeInkEditor: React.FC<Props> = props => {
 	const theme = themeStyle(props.themeId);
 	const darkMode = theme.appearance === ThemeAppearance.Dark;
 
+	const [nativeViewReady, setNativeViewReady] = useState(false);
+	const onNativeViewReady = useCallback(() => setNativeViewReady(true), []);
 	const [loaded, setLoaded] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [changed, setChanged] = useState(false);
@@ -111,6 +113,7 @@ const NativeInkEditor: React.FC<Props> = props => {
 	// Load the drawing
 	const resourceFilename = props.resourceFilename;
 	useEffect(() => {
+		if (!nativeViewReady) return () => {};
 		let cancelled = false;
 
 		const load = async () => {
@@ -185,7 +188,7 @@ const NativeInkEditor: React.FC<Props> = props => {
 		return () => {
 			cancelled = true;
 		};
-	}, [resourceFilename]);
+	}, [resourceFilename, nativeViewReady]);
 
 	// Autosave, so that nothing is lost if the app is closed while drawing.
 	// Uses the same file as the js-draw editor, so the existing "restore
@@ -309,6 +312,7 @@ const NativeInkEditor: React.FC<Props> = props => {
 					style={styles.canvas}
 					darkMode={darkMode}
 					paperColor={paperColor}
+					onReady={onNativeViewReady}
 					onDrawingChanged={onDrawingChanged}
 				/>
 				{(!loaded || busy) && <View style={[styles.loadingOverlay, loaded && { backgroundColor: 'transparent' }]}>

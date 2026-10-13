@@ -58,6 +58,8 @@ export interface JoplinInkViewProps extends ViewProps {
 	ref?: Ref<JoplinInkViewMethods>;
 	darkMode: boolean;
 	paperColor: string;
+	// Sent once the native view is mounted. Methods can only be called after that.
+	onReady?: ()=> void;
 	onDrawingChanged?: ()=> void;
 }
 

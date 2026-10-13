@@ -16,7 +16,11 @@ class JoplinInkView: ExpoView, PKCanvasViewDelegate {
   private static let minimumExportHeight: CGFloat = 100
   private static let exportScale: CGFloat = 2
 
+  // Sent once the view is attached to a window. View functions (loadDrawing...)
+  // can only be called after that.
+  let onReady = EventDispatcher()
   let onDrawingChanged = EventDispatcher()
+  private var readySent = false
 
   private let canvasView = PKCanvasView()
   private let backgroundImageView = UIImageView()
@@ -121,7 +125,12 @@ class JoplinInkView: ExpoView, PKCanvasViewDelegate {
     toolPicker?.setVisible(true, forFirstResponder: canvasView)
 
     DispatchQueue.main.async { [weak self] in
-      self?.canvasView.becomeFirstResponder()
+      guard let self else { return }
+      self.canvasView.becomeFirstResponder()
+      if !self.readySent {
+        self.readySent = true
+        self.onReady([:])
+      }
     }
   }
 
@@ -244,6 +253,7 @@ class JoplinInkView: ExpoView, PKCanvasViewDelegate {
     let backgroundImage = self.backgroundImage
     let backgroundRect = self.backgroundRect
     let drawingData = drawing.dataRepresentation()
+    let exportScale = Self.exportScale
 
     // PNG encoding and OCR are slow, keep them off the main thread
     return try await Task.detached(priority: .userInitiated) { () -> [String: Any] in
@@ -260,7 +270,7 @@ class JoplinInkView: ExpoView, PKCanvasViewDelegate {
 
       if options.recognizeText {
         let format = UIGraphicsImageRendererFormat()
-        format.scale = Self.exportScale
+        format.scale = exportScale
         format.opaque = true
         let composite = UIGraphicsImageRenderer(size: size, format: format).image { context in
           UIColor.white.setFill()
