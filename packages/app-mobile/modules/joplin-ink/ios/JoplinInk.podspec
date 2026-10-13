@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'
-  s.frameworks = 'PencilKit', 'Vision', 'WebKit'
+  s.frameworks = 'PencilKit', 'PhotosUI', 'Vision', 'WebKit'
 
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',

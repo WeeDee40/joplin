@@ -70,9 +70,14 @@ let nativeView: ComponentType<JoplinInkViewProps>|null = null;
 export const isNativeInkAvailable = () => {
 	if (Platform.OS !== 'ios') return false;
 
-	// eslint-disable-next-line @typescript-eslint/no-require-imports -- Lazy-loaded: not available on all platforms
-	const { requireOptionalNativeModule } = require('expo-modules-core');
-	return !!requireOptionalNativeModule(moduleName);
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports -- Lazy-loaded: not available on all platforms
+		const { requireOptionalNativeModule } = require('expo-modules-core');
+		return !!requireOptionalNativeModule(moduleName);
+	} catch (error) {
+		// E.g. in tests, where native modules are not available
+		return false;
+	}
 };
 
 export const getNativeInkView = (): ComponentType<JoplinInkViewProps> => {
@@ -82,4 +87,67 @@ export const getNativeInkView = (): ComponentType<JoplinInkViewProps> => {
 		nativeView = requireNativeViewManager(moduleName);
 	}
 	return nativeView;
+};
+
+// Canvas notes (see ios/Canvas)
+
+export type CanvasPaperTemplate = 'blank'|'lined'|'grid';
+
+export interface CanvasExportOptions {
+	recognizeText: boolean;
+	recognitionLanguages?: string[];
+}
+
+export interface JoplinCanvasViewMethods {
+	// Pages as JSON (CanvasPageState[]). An empty list creates one blank page.
+	loadPages(pagesJson: string, initialPageId: string|null): Promise<void>;
+	// Returns JSON, see CanvasPageExport in CanvasNoteEditor
+	exportPages(options: CanvasExportOptions): Promise<string>;
+	markAllUnsaved(): Promise<void>;
+	addPage(template: CanvasPaperTemplate|null): Promise<void>;
+	deleteCurrentPage(): Promise<void>;
+	setTemplate(template: CanvasPaperTemplate): Promise<void>;
+	addTextBox(): Promise<void>;
+	insertImage(): Promise<void>;
+	sharePdf(title: string): Promise<void>;
+	showToolPicker(): Promise<void>;
+}
+
+export interface CanvasViewState {
+	pageCount: number;
+	currentPage: number;
+	template: CanvasPaperTemplate;
+}
+
+export interface JoplinCanvasViewProps extends ViewProps {
+	ref?: Ref<JoplinCanvasViewMethods>;
+	darkMode: boolean;
+	onReady?: ()=> void;
+	onChanged?: ()=> void;
+	onStateChanged?: (event: { nativeEvent: CanvasViewState })=> void;
+}
+
+const canvasModuleName = 'JoplinCanvas';
+let nativeCanvasView: ComponentType<JoplinCanvasViewProps>|null = null;
+
+export const isNativeCanvasAvailable = () => {
+	if (Platform.OS !== 'ios') return false;
+
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports -- Lazy-loaded: not available on all platforms
+		const { requireOptionalNativeModule } = require('expo-modules-core');
+		return !!requireOptionalNativeModule(canvasModuleName);
+	} catch (error) {
+		// E.g. in tests, where native modules are not available
+		return false;
+	}
+};
+
+export const getNativeCanvasView = (): ComponentType<JoplinCanvasViewProps> => {
+	if (!nativeCanvasView) {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports -- Lazy-loaded: not available on all platforms
+		const { requireNativeViewManager } = require('expo-modules-core');
+		nativeCanvasView = requireNativeViewManager(canvasModuleName);
+	}
+	return nativeCanvasView;
 };
